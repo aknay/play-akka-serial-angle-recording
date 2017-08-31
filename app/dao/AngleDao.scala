@@ -29,9 +29,7 @@ class AngleDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)
   /** The following statements are Action */
   private lazy val createTableAction = angleTableQuery.schema.create
 
-  private val selectAngleAction = angleTableQuery.result
-
-  createTableIfNotExisted
+  createTableIfNotExisted()
 
   /** Ref: http://slick.lightbend.com/doc/3.0.0/database.html */
 
@@ -41,7 +39,7 @@ class AngleDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)
 
   private def getTimeStampFromDate(date: Date): Timestamp = new Timestamp(date.getTime)
 
-  def createTableIfNotExisted {
+  def createTableIfNotExisted() {
     val x = blockExec(MTable.getTables(angleTableName)).toList
     if (x.isEmpty) {
       blockExec(createTableAction)

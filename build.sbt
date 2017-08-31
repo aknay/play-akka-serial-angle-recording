@@ -19,6 +19,19 @@ javaOptions in Universal ++= Seq(
   s"-Dhttp.port=80"
 )
 
+scalacOptions ++= Seq(
+  "-deprecation",
+  "-unchecked",
+  "-Xlint",
+  "-Ywarn-unused",
+  "-Ywarn-dead-code",
+  "-Ywarn-unused-import",
+  "-Ywarn-numeric-widen",
+  "-feature",
+  "-language:_"
+)
+
+
 // scalaz-bintray resolver needed for specs2 library
 resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"
 resolvers += Resolver.jcenterRepo
