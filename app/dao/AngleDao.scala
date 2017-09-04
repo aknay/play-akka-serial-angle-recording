@@ -28,7 +28,7 @@ class AngleDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)
 
   /** The following statements are Action */
   private lazy val createTableAction = angleTableQuery.schema.create
-
+  val defaultAngle = AngleInfo(id = None, 361, 361, getTimeStampFromDate(new Date()))
   createTableIfNotExisted()
 
   /** Ref: http://slick.lightbend.com/doc/3.0.0/database.html */
@@ -62,6 +62,10 @@ class AngleDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)
 
   def getAll: Future[Seq[AngleInfo]] = {
     db.run(angleTableQuery.result)
+  }
+
+  def getLatestEntry: Future[AngleInfo] = {
+    getAll.map(x => if (x.nonEmpty) x.last else defaultAngle)
   }
 
 }

@@ -9,8 +9,11 @@ import javax.inject._
 import akka.actor._
 import akka.serial.{Parity, SerialSettings}
 import akka.util.Timeout
+import dao.AngleDao
+import models.Angle
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
@@ -18,7 +21,7 @@ object ParentActor {
   val arduinoSettings = SerialSettings(115200, 8, false, Parity(0))
 }
 
-class ParentActor @Inject()() extends Actor with ActorLogging {
+class ParentActor @Inject()(angleDao: AngleDao) extends Actor with ActorLogging {
 
   import ParentActor._
 
@@ -30,8 +33,20 @@ class ParentActor @Inject()() extends Actor with ActorLogging {
     arduinoActor = context.actorOf(ArduinoActor("/dev/ttyACM1", arduinoSettings), name = "Arduino")
   }
 
+  def saveAngle(angle: Angle) ={
+    val isSameAsLastEntry: Future[Boolean] = angleDao.getLatestEntry
+      .map(a => if (a.x == angle.x && a.y == angle.y) true else false)
+
+    isSameAsLastEntry.map{
+      case true =>
+      case false =>  angleDao.insert(angle).map(_ => ())
+      }
+  }
+
   def receive = {
     case ArduinoActor.Received(angle) =>
+      saveAngle(angle)
+
       context.actorSelection("/user/*/flowActor").resolveOne().onComplete {
         case Success(websocket) =>
           websocket ! WebSocketActor.sendJson(angle)
@@ -41,4 +56,3 @@ class ParentActor @Inject()() extends Actor with ActorLogging {
       log.info("we don't know what to do here in Parent Actor")
   }
 }
-

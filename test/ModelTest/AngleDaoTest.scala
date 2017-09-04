@@ -31,4 +31,26 @@ class AngleDaoTest extends PlayHeplerTest {
     insertedAngle.get.x mustBe 10
     insertedAngle.get.y mustBe 20
   }
+
+  "should get latest entry angle" in {
+    val angleOne = Angle(1, 2, 3)
+    val angleTwo = Angle(4, 5, 6)
+    val angleThree = Angle(7, 8, 9)
+
+    angleDao.insert(angleOne).futureValue
+    angleDao.insert(angleTwo).futureValue
+    angleDao.insert(angleThree).futureValue
+
+    val angleInfo = angleDao.getLatestEntry.futureValue
+    angleInfo.x mustBe angleThree.x
+    angleInfo.y mustBe angleThree.y
+  }
+
+  "should get default latest entry angle when there is none" in {
+    val angleInfo = angleDao.getLatestEntry.futureValue
+    angleInfo.x mustBe angleDao.defaultAngle.x
+    angleInfo.y mustBe angleDao.defaultAngle.y
+  }
+
+
 }
