@@ -4,6 +4,8 @@ package ModelTest
   * Created by aknay on 4/4/17.
   */
 
+import java.util.Date
+
 import Helper.PlayHeplerTest
 import dao.AngleDao
 import models.Angle
@@ -11,17 +13,18 @@ import models.Angle
 class AngleDaoTest extends PlayHeplerTest {
   val angleDao: AngleDao = app.injector.instanceOf(classOf[AngleDao])
 
-  def deleteAllEntry: Unit = {
+  def deleteAllEntry(): Unit = {
     val angleInfoList = angleDao.getAll.futureValue
     angleInfoList.foreach(v => angleDao.delete(v.id.get))
   }
 
   override def beforeEach(): Unit = {
-    deleteAllEntry
+    angleDao.createTableIfNotExisted()
+    deleteAllEntry()
   }
 
   override def afterEach(): Unit = {
-    deleteAllEntry
+    deleteAllEntry()
   }
 
   "should add angle" in {
@@ -50,6 +53,21 @@ class AngleDaoTest extends PlayHeplerTest {
     val angleInfo = angleDao.getLatestEntry.futureValue
     angleInfo.x mustBe angleDao.defaultAngle.x
     angleInfo.y mustBe angleDao.defaultAngle.y
+  }
+
+
+  "should get data from a date" in {
+    val oldDate = new java.util.Date(java.sql.Date.valueOf("2012-12-24").getTime)
+
+    angleDao.insert(Angle(0, 1, 2), new Date()).futureValue
+    angleDao.insert(Angle(3, 4, 5), new Date()).futureValue
+    angleDao.insert(Angle(6, 7, 8), oldDate).futureValue
+
+    val allAngleList = angleDao.getAll.futureValue
+    allAngleList.size mustBe 3
+
+    val todayDataList = angleDao.getByDate(new Date()).futureValue
+    todayDataList.size mustBe 2
   }
 
 
