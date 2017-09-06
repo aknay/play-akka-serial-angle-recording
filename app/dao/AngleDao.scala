@@ -100,6 +100,13 @@ class AngleDao @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)
     db.run(angleTableQuery.filter(_.timeStamp >= dateWithoutTime).filter(_.timeStamp < dateCloseToNextDay).result)
   }
 
+  def getAllDate: Future[Seq[Date]] = {
+    for {
+      allAngleInfo <- getAll
+      uniqueDateList <- Future.successful(allAngleInfo.map{ x => removeTimeInfoFromDate(x.date)}.distinct)
+    } yield uniqueDateList
+  }
+
   private def removeTimeInfoFromDate(date: Date): Date = {
     val cal = Calendar.getInstance()
     cal.setTime(date)

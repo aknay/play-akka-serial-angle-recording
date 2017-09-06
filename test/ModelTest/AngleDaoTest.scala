@@ -70,5 +70,20 @@ class AngleDaoTest extends PlayHeplerTest {
     todayDataList.size mustBe 2
   }
 
+  "should get all unique date" in {
+    val oldDate = new java.util.Date(java.sql.Date.valueOf("2012-12-24").getTime)
+
+    angleDao.insert(Angle(0, 1, 2), new Date()).futureValue
+    angleDao.insert(Angle(3, 4, 5), new Date()).futureValue
+    angleDao.insert(Angle(6, 7, 8), oldDate).futureValue
+
+    val allAngleList = angleDao.getAll.futureValue
+    allAngleList.size mustBe 3
+
+    val allDate = angleDao.getAllDate.futureValue
+    allDate.size mustBe 2
+    allDate.last mustBe oldDate
+  }
+
 
 }
