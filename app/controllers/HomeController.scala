@@ -14,7 +14,6 @@ import play.api.mvc._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-
 /**
   * This class creates the actions and the websocket needed.
   */
@@ -34,15 +33,12 @@ class HomeController @Inject()(implicit actorSystem: ActorSystem,
 
     for {
       dates <- angleDao.getAllDate
-      a <- Future.successful(dates.map(d => (d.toString, d.toString)))
+      a <- Future.successful(dates.map(d => (WebSocketActor.dateToString(d), WebSocketActor.dateToString(d))))
     } yield Ok(views.html.time(Forms.dateForm, a))
-
-
   }
 
   def ws: WebSocket = WebSocket.accept[JsValue, JsValue] { request =>
     ActorFlow.actorRef(out => WebSocketActor.props(out))
   }
-
-
 }
+

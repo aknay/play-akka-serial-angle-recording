@@ -4,6 +4,7 @@ package actors
   * Created by aknay on 20/6/17.
   */
 
+import java.util.Date
 import javax.inject._
 
 import akka.actor._
@@ -19,6 +20,9 @@ import scala.util.{Failure, Success}
 
 object ParentActor {
   val arduinoSettings = SerialSettings(115200, 8, false, Parity(0))
+
+  case class GetAnglesForThis(date: Date)
+
 }
 
 class ParentActor @Inject()(angleDao: AngleDao) extends Actor with ActorLogging {
@@ -33,14 +37,14 @@ class ParentActor @Inject()(angleDao: AngleDao) extends Actor with ActorLogging 
     arduinoActor = context.actorOf(ArduinoActor("/dev/ttyUSB0", arduinoSettings), name = "Arduino")
   }
 
-  def saveAngle(angle: Angle) ={
+  def saveAngle(angle: Angle) = {
     val isSameAsLastEntry: Future[Boolean] = angleDao.getLatestEntry
       .map(a => if (a.x == angle.x && a.y == angle.y) true else false)
 
-    isSameAsLastEntry.map{
+    isSameAsLastEntry.map {
       case true =>
-      case false =>  angleDao.insert(angle).map(_ => ())
-      }
+      case false => angleDao.insert(angle).map(_ => ())
+    }
   }
 
   def receive = {
@@ -52,6 +56,10 @@ class ParentActor @Inject()(angleDao: AngleDao) extends Actor with ActorLogging 
           websocket ! WebSocketActor.sendJson(angle)
         case Failure(e) => throw e
       }
+
+    case ParentActor.GetAnglesForThis(date) =>
+      sender ! angleDao.getByDate(date)
+
     case _ =>
       log.info("we don't know what to do here in Parent Actor")
   }
