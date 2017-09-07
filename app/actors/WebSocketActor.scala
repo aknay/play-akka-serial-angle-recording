@@ -7,7 +7,7 @@ package actors
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import akka.util.Timeout
 import models.Angle
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 
 import scala.concurrent.duration._
 
@@ -33,6 +33,10 @@ class WebSocketActor(out: ActorRef) extends Actor with ActorLogging {
         "type" -> angleMarker,
         "message" -> Json.obj("angle" -> angle)
       )
-      out ! Json.stringify(jsonMsg)
+      out ! jsonMsg
+
+    case json: JsValue => log.info("we received json" + json)
+
+    case _ => log.info("we might received something")
   }
 }

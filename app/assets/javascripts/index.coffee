@@ -3,19 +3,15 @@ $ ->
   ws = new WebSocket $("body").data("ws-url")
 
   ws.onmessage = (event) ->
-
-    js = JSON.parse(event.data);
-    console.log(event.data)
+    js = JSON.parse(event.data)
     switch js.type
-        when "xbee"
-            display(js.message)
-        when "rfid"
-            console.log(js.message)
-            displayRfidMsg(js.message)
-        when "teamWithCount"
-            displayTeamWithCount(js.message)
         when "angle"
             displayAngle(js.message)
+
+  $("#dateform").submit (event) ->
+    console.log( $("#date").val())
+    # send the date back
+    ws.send(JSON.stringify({date: $("#date").val()}))
 
   ws.onopen = (event) ->
     numberOfSecondInOneDay = 86400
@@ -57,20 +53,18 @@ $ ->
 
   displayAngle = (message) ->
     $("#message_holder").text("X angle: " +message.angle.x + ", Y angle: " +message.angle.y)
-
-
-    console.log("message is" +message.angle.x)
     plot = $("#" + "placeholder").data("plot")
-    data = getPricesFromArray(plot.getData()[0].data)
-    yData = getPricesFromArray(plot.getData()[1].data)
-    console.log(yData)
-    yData.shift()
-    yData.push(message.angle.y)
-    data.shift()
-    v = Math.floor((Math.random() * 10) + 1);
-    data.push(message.angle.x)
-    plot.setData([getChartArray(data), getChartArray(yData)])
-    plot.draw()
+    if (typeof plot isnt "undefined")
+        data = getPricesFromArray(plot.getData()[0].data)
+        yData = getPricesFromArray(plot.getData()[1].data)
+        console.log(yData)
+        yData.shift()
+        yData.push(message.angle.y)
+        data.shift()
+        v = Math.floor((Math.random() * 10) + 1);
+        data.push(message.angle.x)
+        plot.setData([getChartArray(data), getChartArray(yData)])
+        plot.draw()
 
   displayRfidMsg = (msg) ->
     $("#rfid_field input").val(msg.tag)

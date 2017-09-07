@@ -30,7 +30,7 @@ class ParentActor @Inject()(angleDao: AngleDao) extends Actor with ActorLogging 
   implicit val timeout = Timeout(5.seconds)
 
   override def preStart: Unit = {
-    arduinoActor = context.actorOf(ArduinoActor("/dev/ttyACM1", arduinoSettings), name = "Arduino")
+    arduinoActor = context.actorOf(ArduinoActor("/dev/ttyUSB0", arduinoSettings), name = "Arduino")
   }
 
   def saveAngle(angle: Angle) ={

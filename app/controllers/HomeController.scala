@@ -5,10 +5,14 @@ import javax.inject._
 import actors._
 import akka.actor._
 import akka.stream._
+import dao.AngleDao
+import forms.Forms
 import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.libs.json.JsValue
 import play.api.libs.streams.ActorFlow
 import play.api.mvc._
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 /**
@@ -17,6 +21,7 @@ import scala.concurrent.Future
 @Singleton
 class HomeController @Inject()(implicit actorSystem: ActorSystem,
                                mat: Materializer,
+                               angleDao: AngleDao,
                                val messagesApi: MessagesApi)
   extends Controller with I18nSupport {
 
@@ -26,10 +31,16 @@ class HomeController @Inject()(implicit actorSystem: ActorSystem,
   }
 
   def time = Action.async { implicit request =>
-    Future.successful(Ok(views.html.time()))
+
+    for {
+      dates <- angleDao.getAllDate
+      a <- Future.successful(dates.map(d => (d.toString, d.toString)))
+    } yield Ok(views.html.time(Forms.dateForm, a))
+
+
   }
 
-  def ws: WebSocket = WebSocket.accept[String, String] { request =>
+  def ws: WebSocket = WebSocket.accept[JsValue, JsValue] { request =>
     ActorFlow.actorRef(out => WebSocketActor.props(out))
   }
 

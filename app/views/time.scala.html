@@ -1,4 +1,4 @@
-@()(implicit r: Request[_], messages: Messages, lang: Lang, flash: Flash)
+@(dateForm: Form[String], dates: Seq[(String, String)])(implicit r: Request[_], messages: Messages, lang: Lang, flash: Flash)
 @import helper._
 @import b3.vertical.fieldConstructor
 @navbar()
@@ -23,6 +23,13 @@
 
 	</script>
 </head>
+
+<div class="container">
+<form id="dateform" class="navbar-form pull-right">
+    @helper.select(dateForm("date"), options = dates)
+    <button type="submit" class="btn">Inquiry</button>
+</form>
+</div>
 </body>
 
 
