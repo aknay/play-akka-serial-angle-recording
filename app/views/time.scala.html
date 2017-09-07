@@ -1,0 +1,35 @@
+@()(implicit r: Request[_], messages: Messages, lang: Lang, flash: Flash)
+@import helper._
+@import b3.vertical.fieldConstructor
+@navbar()
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
+<script type='text/javascript' src='@routes.Assets.at("lib/flot/jquery.flot.js")'></script>
+<script type='text/javascript' src='@routes.Assets.at("lib/flot/jquery.flot.time.js")'></script>
+<body>
+
+<body data-ws-url="@routes.HomeController.ws.webSocketURL()">
+<script type="text/javascript">
+
+	$(function() {
+		var d = [ [944006400000, 382.38], [944007400000, 383.94], [944008400000, 381.44]];
+		$.plot("#placeholderr", [ d ], {
+				xaxis: {
+                    mode: "time"
+				}
+			});
+	});
+
+	</script>
+</head>
+</body>
+
+
+<div class="demo-container">
+    <div id="placeholderr" class="chart"></div>
+</div>
+
+
+</html>
+

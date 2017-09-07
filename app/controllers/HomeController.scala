@@ -25,6 +25,10 @@ class HomeController @Inject()(implicit actorSystem: ActorSystem,
     Future.successful(Ok(views.html.index()))
   }
 
+  def time = Action.async { implicit request =>
+    Future.successful(Ok(views.html.time()))
+  }
+
   def ws: WebSocket = WebSocket.accept[String, String] { request =>
     ActorFlow.actorRef(out => WebSocketActor.props(out))
   }
