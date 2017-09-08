@@ -7,11 +7,25 @@ $ ->
     switch js.type
         when "angle"
             displayAngle(js.message)
+        when "time"
+            console.log("we received time" + js.message)
+            displayTime(js.message)
+        else
+            console.log(js)
 
   $("#dateform").submit (event) ->
     console.log( $("#date").val())
     # send the date back
     ws.send(JSON.stringify({date: $("#date").val()}))
+
+
+   $("#button").click ->
+      console.log("HELLO")
+      console.log( $("#date").val())
+      # send the date back
+      ws.send(JSON.stringify({date: $("#date").val()}))
+
+
 
   ws.onopen = (event) ->
     numberOfSecondInOneDay = 86400
@@ -21,9 +35,13 @@ $ ->
     d = []
     d.push(0) for i in [0..displayRange]
 
-    chart = $("<div>").addClass("chart").prop("id", "placeholder")
-    $("#stocks").prepend(chart)
-    plot = chart.plot([getChartArray(d), getChartArray(d)], getChartOptions())
+    if($("#" + "stocks").length is 0)
+        console.log("DF")
+    else
+       chart = $("<div>").addClass("chart").prop("id", "placeholder")
+       $("#stocks").prepend(chart)
+       plot = chart.plot([getChartArray(d), getChartArray(d)], getChartOptions())
+       console.log("HAV")
 
     console.log("opened")
 
@@ -48,8 +66,16 @@ $ ->
     xaxis:
         show: false
 
+  getTimeChartOptions = () ->
+    xaxis: { mode: "time" }
+
   display = (message) ->
     $("#message_holder").text(message)
+
+  displayTime = (message) ->
+    console.log("HERE")
+    chart = $("<div>").addClass("chart").prop("id", "placeholder")
+    $.plot("#placeholderr", [message], getTimeChartOptions());
 
   displayAngle = (message) ->
     $("#message_holder").text("X angle: " +message.angle.x + ", Y angle: " +message.angle.y)

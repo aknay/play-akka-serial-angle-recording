@@ -10,32 +10,28 @@
 <body>
 
 <body data-ws-url="@routes.HomeController.ws.webSocketURL()">
-<script type="text/javascript">
 
-	$(function() {
-		var d = [ [944006400000, 382.38], [944007400000, 383.94], [944008400000, 381.44]];
-		$.plot("#placeholderr", [ d ], {
-				xaxis: {
-                    mode: "time"
-				}
-			});
-	});
-
-	</script>
 </head>
 
 <div class="container">
 <form id="dateform" class="navbar-form pull-right">
     @helper.select(dateForm("date"), options = dates)
-    <button type="submit" class="btn">Inquiry</button>
+
 </form>
+    <button id='button' class="btn">Inquiry</button>
 </div>
 </body>
 
 
-<div class="demo-container">
-    <div id="placeholderr" class="chart"></div>
-</div>
+<div class="row">
+    <div class="center-block col-md-12">
+        <div id="time" class="container">
+        </div>
+    </div>
+
+    <div class="demo-container">
+        <div id="placeholderr" class="demo-placeholder"></div>
+    </div>
 
 
 </html>

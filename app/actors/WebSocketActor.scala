@@ -8,7 +8,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSelection, Props}
-import akka.pattern.ask
+import akka.pattern.{ask, pipe}
 import akka.util.Timeout
 import models.{Angle, AngleInfo}
 import play.api.libs.json.{JsValue, Json}
@@ -16,7 +16,7 @@ import play.api.libs.json.{JsValue, Json}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration._
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 object WebSocketActor {
   //Ref: http://doc.akka.io/docs/akka/current/scala/actors.html#recommended-practices
@@ -58,16 +58,20 @@ class WebSocketActor(out: ActorRef) extends Actor with ActorLogging {
         val date = WebSocketActor.stringToDate(jsonDate.get)
         log.info("we received date as Date " + date)
 
-        val angles: Future[Future[Seq[AngleInfo]]] = (parentActor ? ParentActor.GetAnglesForThis(date)).mapTo[Future[Seq[AngleInfo]]]
+        val anglesListFuture: Future[Seq[AngleInfo]] = (parentActor ? ParentActor.GetAnglesForThis(date)).mapTo[Seq[AngleInfo]]
 
-        angles.onComplete {
-          case Success(a) =>
-            log.info("we should received angles")
-            a.map { v => log.info("x angle is " + v.head.x) }
-          case Failure(e) =>
+        val timeSeries: Future[Seq[Seq[Long]]] =  for {
+          angleInfoList <- anglesListFuture
+        } yield angleInfoList.map{ x => Seq(x.date.getTime, x.x)}
+
+       val timeSeriesAsJson: Future[JsValue] = timeSeries.map{
+          x =>  Json.obj( "type" -> "time",
+            "message" -> Json.toJson(x))
         }
-      }
 
+        pipe (timeSeriesAsJson) to out
+
+      }
 
     case _ => log.info("we might received something")
   }

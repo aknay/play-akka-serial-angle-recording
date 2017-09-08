@@ -8,10 +8,11 @@ import java.util.Date
 import javax.inject._
 
 import akka.actor._
+import akka.pattern.pipe
 import akka.serial.{Parity, SerialSettings}
 import akka.util.Timeout
 import dao.AngleDao
-import models.Angle
+import models.{Angle, AngleInfo}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -58,7 +59,8 @@ class ParentActor @Inject()(angleDao: AngleDao) extends Actor with ActorLogging 
       }
 
     case ParentActor.GetAnglesForThis(date) =>
-      sender ! angleDao.getByDate(date)
+      val data: Future[Seq[AngleInfo]] = angleDao.getByDate(date)
+      pipe (data) to sender
 
     case _ =>
       log.info("we don't know what to do here in Parent Actor")
