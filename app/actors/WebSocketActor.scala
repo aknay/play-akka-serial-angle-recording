@@ -41,6 +41,10 @@ class WebSocketActor(out: ActorRef) extends Actor with ActorLogging {
 
   val parentActor: ActorSelection = context.actorSelection("akka://application/user/parent-actor")
 
+  override def preStart(): Unit = {
+    parentActor ! ParentActor.Register(self)
+  }
+
   def receive = {
     case WebSocketActor.sendJson(angle) =>
 
@@ -60,19 +64,25 @@ class WebSocketActor(out: ActorRef) extends Actor with ActorLogging {
 
         val anglesListFuture: Future[Seq[AngleInfo]] = (parentActor ? ParentActor.GetAnglesForThis(date)).mapTo[Seq[AngleInfo]]
 
-        val timeSeries: Future[Seq[Seq[Long]]] =  for {
+        val timeSeries: Future[Seq[Seq[Long]]] = for {
           angleInfoList <- anglesListFuture
-        } yield angleInfoList.map{ x => Seq(x.date.getTime, x.x)}
+        } yield angleInfoList.map { x => Seq(x.date.getTime, x.x) }
 
-       val timeSeriesAsJson: Future[JsValue] = timeSeries.map{
-          x =>  Json.obj( "type" -> "time",
-            "message" -> Json.toJson(x))
+        val timeSeriesAsJson: Future[JsValue] = timeSeries.map {
+          x =>
+            Json.obj("type" -> "time",
+              "message" -> Json.toJson(x))
         }
 
-        pipe (timeSeriesAsJson) to out
+        pipe(timeSeriesAsJson) to out
 
       }
 
     case _ => log.info("we might received something")
   }
+
+  override def postStop() = {
+    parentActor ! ParentActor.UnRegister(self)
+  }
+
 }
